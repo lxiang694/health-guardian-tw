@@ -48,8 +48,8 @@ var HealthApp = (() => {
   // src/lib/supabase.js
   var import_supabase_js = __require("@supabase/supabase-js");
   var import_meta = {};
-  var SUPABASE_URL = import_meta.env.VITE_SUPABASE_URL || "https://yzdmabpclwpmumlejdvz.supabase.co";
-  var SUPABASE_ANON_KEY = import_meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6ZG1hYnBjbHdwbXVtbGVqZHZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MDk3ODksImV4cCI6MjA5MTk4NTc4OX0.B3iHtNZeGx4MmAhp3f7NCB44GVqabGCUEO5P3jZY7lM";
+  var SUPABASE_URL = "https://yzdmabpclwpmumlejdvz.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6ZG1hYnBjbHdwbXVtbGVqZHZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MDk3ODksImV4cCI6MjA5MTk4NTc4OX0.B3iHtNZeGx4MmAhp3f7NCB44GVqabGCUEO5P3jZY7lM";
   var supabase = (0, import_supabase_js.createClient)(SUPABASE_URL, SUPABASE_ANON_KEY);
   function hashPassword(pw) {
     let h = 0;
