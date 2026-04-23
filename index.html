@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <meta name="theme-color" content="#1B5C3E"/>
+  <title>健康守護 | 您的專屬健康管家</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#F5EFE2;font-family:'Noto Sans TC',sans-serif}</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Step 1: Load CDN dependencies -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+  <!-- Step 2: Browser require() shim — maps module names to CDN globals -->
+  <script>
+    window.require = function(mod) {
+      if (mod === 'react')                  return window.React;
+      if (mod === 'react-dom')              return window.ReactDOM;
+      if (mod === 'recharts')               return window.Recharts;
+      if (mod === '@supabase/supabase-js')  return window.supabase;
+      console.error('Unknown module:', mod);
+      return {};
+    };
+  </script>
+
+  <!-- Step 3: Load app bundle (uses require() shim above) -->
+  <script src="/app.js"></script>
+
+  <!-- Step 4: Mount React app -->
+  <script>
+    try {
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      const App = (HealthApp && HealthApp.default) ? HealthApp.default : HealthApp;
+      root.render(React.createElement(App));
+    } catch(e) {
+      document.getElementById('root').innerHTML =
+        '<div style="padding:40px;text-align:center;font-family:sans-serif">' +
+        '<div style="font-size:48px">⚠️</div>' +
+        '<div style="font-size:18px;margin-top:16px;color:#c0392b">啟動失敗：' + e.message + '</div>' +
+        '</div>';
+      console.error('App mount error:', e);
+    }
+  </script>
+</body>
+</html>
