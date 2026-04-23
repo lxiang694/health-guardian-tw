@@ -1,3 +1,18 @@
+// ─── Browser require() shim ─────────────────────────────────────
+// esbuild IIFE bundles use __require(). This shim maps CDN globals.
+(function(){
+  if(typeof require==='undefined'){
+    window.require=function(mod){
+      if(mod==='react')return window.React;
+      if(mod==='react-dom')return window.ReactDOM;
+      if(mod==='recharts')return window.Recharts;
+      if(mod==='@supabase/supabase-js')return window.supabase;
+      console.error('[require shim] unknown module:',mod);
+      return {};
+    };
+  }
+})();
+// ─────────────────────────────────────────────────────────────────
 var HealthApp = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
