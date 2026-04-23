@@ -1,0 +1,22 @@
+{
+  "name": "health-guardian-tw",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "echo \"Pre-built, nothing to do\"",
+    "preview": "vite preview",
+    "vercel-build": "echo \"Using pre-built dist\""
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.3.1"
+  }
+}
