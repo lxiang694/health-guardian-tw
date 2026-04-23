@@ -170,7 +170,7 @@ const ASSESSMENTS = {
     riskLevels:[
       { max:8, level:'低風險', color:C.success, icon:'✅', msg:'睡眠品質良好，繼續保持規律睡眠習慣' },
       { max:18, level:'中風險', color:C.warning, icon:'⚠️', msg:'睡眠品質不佳，建議調整睡前習慣與補充助眠保健品' },
-      { max:38, level:'高風險', color:C.danger, icon:'🚨', msg:'嚴重睡眠障礙，建議就醫評估是否需要治療' },
+      { max:38, level:'高風險', color:C.danger, icon:'🚨', msg:'嚴重睡眠障礙，建議諮詢醫師評估' },
     ],
     symptoms:['入睡困難焦慮','夜間頻繁醒來','早上過早清醒','日間精神不濟','情緒煩躁易怒','注意力難以集中'],
     suggestions:['固定就寢與起床時間','睡前1小時避免藍光螢幕','建立睡前放鬆儀式','睡房保持涼爽黑暗','下午後避免咖啡因','規律有氧運動（但非睡前）'],
@@ -223,7 +223,7 @@ const sleepData = [
 // 體檢報告參數
 const EXAM_PARAMS = {
   bloodLipids: [
-    { id:'tc', label:'總膽固醇', unit:'mg/dL', low:0, normalLow:0, normalHigh:200, high:240, warn:'總膽固醇偏高', detail:'增加心血管疾病風險，建議減少飽和脂肪攝取' },
+    { id:'tc', label:'總膽固醇', unit:'mg/dL', low:0, normalLow:0, normalHigh:200, high:240, warn:'總膽固醇偏高', detail:'增加心血管健康風險，建議減少飽和脂肪攝取' },
     { id:'ldl', label:'LDL 壞膽固醇', unit:'mg/dL', low:0, normalLow:0, normalHigh:100, high:160, warn:'LDL偏高', detail:'增加動脈硬化風險，建議補充魚油、紅麴' },
     { id:'hdl', label:'HDL 好膽固醇', unit:'mg/dL', low:40, normalLow:60, normalHigh:999, high:999, warn:'HDL偏低', detail:'心臟保護力不足，建議有氧運動並補充Omega-3' },
     { id:'tg', label:'三酸甘油脂', unit:'mg/dL', low:0, normalLow:0, normalHigh:150, high:200, warn:'三酸甘油脂偏高', detail:'代謝症候群警訊，建議減糖減酒，補充魚油' },
@@ -240,7 +240,7 @@ const EXAM_PARAMS = {
   ],
   bloodSugar: [
     { id:'fbg', label:'空腹血糖', unit:'mg/dL', low:70, normalLow:70, normalHigh:100, high:126, warn:'血糖偏高', detail:'糖尿病前期或糖尿病，建議控制飲食，補充苦瓜胜肽' },
-    { id:'hba1c', label:'糖化血色素 HbA1c', unit:'%', low:0, normalLow:0, normalHigh:5.7, high:6.5, warn:'HbA1c偏高', detail:'近3個月血糖控制不佳，需就醫評估治療' },
+    { id:'hba1c', label:'糖化血色素 HbA1c', unit:'%', low:0, normalLow:0, normalHigh:5.7, high:6.5, warn:'HbA1c偏高', detail:'近3個月血糖控制不佳，建議諮詢醫師評估' },
   ],
   thyroid: [
     { id:'tsh', label:'甲促素 TSH', unit:'μIU/mL', low:0.4, normalLow:0.4, normalHigh:4.0, high:10, warn:'TSH異常', detail:'甲狀腺功能異常，建議就醫進一步評估' },
@@ -420,6 +420,26 @@ function LoginGate({ pageName, onLogin, children }) {
   );
 }
 
+// ── 模塊級表單組件（必須在組件外定義，避免每次重渲染時重建導致失焦）──
+function AuthFormField({ k, label, placeholder, type='text', right=null, form, setForm, errors, setErrors }) {
+  return (
+    <div style={{marginBottom:16}}>
+      <label style={{fontSize:13,fontWeight:700,color:C.textS,display:'block',marginBottom:6}}>{label}</label>
+      <div style={{position:'relative',display:'flex',alignItems:'center'}}>
+        <input
+          type={type}
+          value={form[k]||''}
+          onChange={e=>{ setForm(f=>({...f,[k]:e.target.value})); if(setErrors) setErrors(er=>({...er,[k]:''})); }}
+          placeholder={placeholder}
+          style={{width:'100%',border:`2px solid ${errors&&errors[k]?C.danger:C.border}`,borderRadius:12,padding:'13px 16px',fontSize:16,outline:'none',color:C.text,background:C.bg,boxSizing:'border-box',paddingRight:right?'48px':'16px'}}
+        />
+        {right}
+      </div>
+      {errors&&errors[k] && <div style={{fontSize:12,color:C.danger,marginTop:4}}>⚠ {errors[k]}</div>}
+    </div>
+  );
+}
+
 // 登入/注冊 Modal
 function AuthModal({ mode: initMode, onClose, onSuccess }) {
   const [mode, setMode] = useState(initMode||'login'); // login | register | forgot
@@ -496,22 +516,7 @@ function AuthModal({ mode: initMode, onClose, onSuccess }) {
     setLoading(false);
   };
 
-  const F = ({ k, label, placeholder, type='text', right=null }) => (
-    <div style={{marginBottom:16}}>
-      <label style={{fontSize:13,fontWeight:700,color:C.textS,display:'block',marginBottom:6}}>{label}</label>
-      <div style={{position:'relative',display:'flex',alignItems:'center'}}>
-        <input
-          type={type}
-          value={form[k]}
-          onChange={e=>{ setForm(f=>({...f,[k]:e.target.value})); setErrors(er=>({...er,[k]:''})); }}
-          placeholder={placeholder}
-          style={{width:'100%',border:`2px solid ${errors[k]?C.danger:C.border}`,borderRadius:12,padding:'13px 16px',fontSize:16,outline:'none',color:C.text,background:C.bg,boxSizing:'border-box',paddingRight:right?'48px':'16px'}}
-        />
-        {right}
-      </div>
-      {errors[k] && <div style={{fontSize:12,color:C.danger,marginTop:4}}>⚠ {errors[k]}</div>}
-    </div>
-  );
+  // F is defined at module level to prevent remount on every keystroke
 
   const eyeBtn = (field, show, setShow) => (
     <button type="button" onClick={()=>setShow(!show)} style={{position:'absolute',right:14,background:'none',border:'none',cursor:'pointer',fontSize:18,color:C.textL,padding:0}}>
@@ -550,12 +555,12 @@ function AuthModal({ mode: initMode, onClose, onSuccess }) {
 
         {/* Form */}
         {mode==='register' && (
-          <F k="nickname" label="您的名字或暱稱" placeholder="例：阿玲、王媽媽、Peter" />
+          <AuthFormField k="nickname" label="您的名字或暱稱" placeholder="例：阿玲、王媽媽、Peter" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
         )}
-        <F k="phone" label="手機號碼" placeholder="09xxxxxxxx" type="tel" />
-        <F k="password" label="密碼（至少6位）" placeholder="請設定密碼" type={showPwd?'text':'password'} right={eyeBtn('password',showPwd,setShowPwd)} />
+        <AuthFormField k="phone" label="手機號碼" placeholder="09xxxxxxxx" type="tel" form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
+        <AuthFormField k="password" label="密碼（至少6位）" placeholder="請設定密碼" type={showPwd?'text':'password'} right={eyeBtn('password',showPwd,setShowPwd)} form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
         {mode==='register' && (
-          <F k="password2" label="再次確認密碼" placeholder="再輸入一次密碼" type={showPwd2?'text':'password'} right={eyeBtn('password2',showPwd2,setShowPwd2)} />
+          <AuthFormField k="password2" label="再次確認密碼" placeholder="再輸入一次密碼" type={showPwd2?'text':'password'} right={eyeBtn('password2',showPwd2,setShowPwd2)} form={form} setForm={setForm} errors={errors} setErrors={setErrors} />
         )}
 
         {/* 條款 */}
@@ -581,6 +586,11 @@ function AuthModal({ mode: initMode, onClose, onSuccess }) {
             : <span>還沒有帳號？<button onClick={()=>{setMode('register');setErrors({});}} style={{background:'none',border:'none',color:C.primary,fontWeight:800,fontSize:14,cursor:'pointer'}}>免費注冊</button></span>
           }
         </div>
+        {mode==='login' && (
+          <div style={{textAlign:'center',marginTop:12,fontSize:13,color:C.textS}}>
+            忘記密碼？請聯絡客服 LINE：<span style={{color:C.primary,fontWeight:700}}>@healthguard</span>，提供手機號碼即可重置
+          </div>
+        )}
       </div>
     </div>
   );
@@ -655,7 +665,16 @@ function HomePage({ state, setState, user, requireLogin }) {
 
         {/* Health Score Card */}
         <div style={{ background:'rgba(255,255,255,0.12)', borderRadius:20, padding:'16px 20px', backdropFilter:'blur(10px)' }}>
-          {healthScore ? (
+          {!user ? (
+            <div style={{ textAlign:'center', padding:'8px 0' }}>
+              <div style={{ color:'rgba(255,255,255,0.95)', fontSize:16, fontWeight:700, marginBottom:6 }}>🌱 免費注冊，開始健康管理</div>
+              <div style={{ color:'rgba(255,255,255,0.75)', fontSize:13, marginBottom:14 }}>AI體檢解讀 · 健康記錄 · 個人化保健推薦</div>
+              <div style={{ display:'flex', gap:8, justifyContent:'center' }}>
+                <button onClick={()=>requireLogin('register')} style={{ background:`linear-gradient(135deg,${C.accent},${C.accentL})`, border:'none', borderRadius:12, padding:'10px 20px', color:'#fff', fontSize:14, fontWeight:800, cursor:'pointer' }}>免費注冊</button>
+                <button onClick={()=>requireLogin('login')} style={{ background:'rgba(255,255,255,0.2)', border:'2px solid rgba(255,255,255,0.5)', borderRadius:12, padding:'10px 20px', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer' }}>登入</button>
+              </div>
+            </div>
+          ) : healthScore ? (
             <div style={{ display:'flex', alignItems:'center', gap:16 }}>
               <div style={{ textAlign:'center' }}>
                 <div style={{ fontSize:48, fontWeight:900, color:'#fff', lineHeight:1 }}>{Math.round(healthScore)}</div>
@@ -665,7 +684,7 @@ function HomePage({ state, setState, user, requireLogin }) {
                 <ResponsiveContainer width="100%" height={90}>
                   <RadarChart data={radarData} margin={{top:5,right:5,bottom:5,left:5}}>
                     <PolarGrid stroke="rgba(255,255,255,0.2)" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill:'rgba(255,255,255,0.7)', fontSize:9 }} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill:'rgba(255,255,255,0.7)', fontSize:12 }} />
                     <Radar dataKey="value" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.8)" strokeWidth={2} />
                   </RadarChart>
                 </ResponsiveContainer>
@@ -706,42 +725,46 @@ function HomePage({ state, setState, user, requireLogin }) {
 
         {/* Today's Status */}
         <div style={{ ...S.card, marginBottom:16 }}>
-          <SectionHeader title="今日健康數據" sub="最近記錄" action="查看更多" onAction={()=>setState(s=>({...s,page:'records'}))} />
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10 }}>
-            {[
-              { label:'血壓', val:'118/76', unit:'mmHg', emoji:'💓', color:C.success, trend:'▼ 改善中' },
-              { label:'空腹血糖', val:'98', unit:'mg/dL', emoji:'🩸', color:C.success, trend:'▼ 趨於正常' },
-              { label:'體重', val:'75.8', unit:'kg', emoji:'⚖️', color:C.info, trend:'▼ -2.7kg' },
-              { label:'睡眠時數', val:'6.5', unit:'小時', emoji:'😴', color:C.warning, trend:'需再改善' },
-            ].map(m=>(
-              <div key={m.label} style={{ background:`${m.color}10`, border:`1px solid ${m.color}30`, borderRadius:12, padding:'12px 14px' }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
-                  <span style={{ fontSize:18 }}>{m.emoji}</span>
-                  <span style={{ fontSize:11, color:m.color, fontWeight:600 }}>{m.trend}</span>
+          <SectionHeader title="今日健康數據" sub={user ? '最近記錄' : '登入後顯示您的數據'} action="查看更多" onAction={()=>setState(s=>({...s,page: user?'records':'records'}))} />
+          {user ? (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10 }}>
+              {[
+                { label:'血壓', val: state.newRecord?.sys ? `${state.newRecord.sys}/${state.newRecord.dia}` : '---', unit:'mmHg', emoji:'💓', color:C.success },
+                { label:'空腹血糖', val: state.newRecord?.bs || '---', unit:'mg/dL', emoji:'🩸', color:C.success },
+                { label:'體重', val: state.newRecord?.weight || '---', unit:'kg', emoji:'⚖️', color:C.info },
+                { label:'睡眠時數', val: state.newRecord?.sleep || '---', unit:'小時', emoji:'😴', color:C.warning },
+              ].map(m=>(
+                <div key={m.label} style={{ background:`${m.color}10`, border:`1px solid ${m.color}30`, borderRadius:12, padding:'12px 14px' }}>
+                  <div style={{ fontSize:18, marginBottom:4 }}>{m.emoji}</div>
+                  <div style={{ fontSize:22, fontWeight:900, color:C.text }}>{m.val}<span style={{ fontSize:11, color:C.textS, marginLeft:3 }}>{m.unit}</span></div>
+                  <div style={{ fontSize:12, color:C.textS }}>{m.label}</div>
                 </div>
-                <div style={{ fontSize:22, fontWeight:900, color:C.text }}>{m.val}<span style={{ fontSize:11, color:C.textS, marginLeft:3 }}>{m.unit}</span></div>
-                <div style={{ fontSize:12, color:C.textS }}>{m.label}</div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign:'center', padding:'20px', color:C.textS }}>
+              <div style={{ fontSize:36, marginBottom:8 }}>📊</div>
+              <div style={{ fontSize:14, fontWeight:700, color:C.text }}>完成記錄後，這裡將顯示您的健康數據</div>
+              <button onClick={()=>setState(s=>({...s,page:'records'}))} style={{ ...S.btn('outline'), marginTop:12, width:'auto', padding:'8px 20px', fontSize:13 }}>立即記錄</button>
+            </div>
+          )}
         </div>
 
-        {/* Notifications/Tips */}
+        {/* Notifications/Tips — dynamic based on user state */}
         <div style={{ ...S.card, marginBottom:16 }}>
-          <SectionHeader title="個人化提醒" />
+          <SectionHeader title="健康小提醒" />
           <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
             {[
-              { type:'warn', icon:'⚠️', text:'您的血壓有改善，建議繼續補充魚油、納豆激酶' },
-              { type:'info', icon:'💊', text:'今日用藥提醒：深海魚油（早餐後）', time:'08:30' },
-              { type:'tip', icon:'🌟', text:'節氣提醒：清明時節養肝護肝，多吃綠色蔬菜' },
-              { type:'promo', icon:'🎁', text:'會員優惠：這週購滿$1500享85折', time:'活動中' },
+              ...(completedAssessments > 0 ? [{ type:'warn', icon:'✅', text:`您已完成 ${completedAssessments} 項健康自測，點此查看 AI 推薦`, action:()=>setState(s=>({...s,page:'analysis'})) }] : [{ type:'tip', icon:'🩺', text:'完成健康自測，獲得專屬保健品推薦', action:()=>setState(s=>({...s,page:'assessment'})) }]),
+              { type:'info', icon:'📋', text:'保健食品非藥品，服用前請諮詢醫師或藥師', action:null },
+              { type:'tip', icon:'🏃', text:'每天30分鐘有氧運動，有助維持心血管健康', action:null },
             ].map((n,i)=>(
-              <div key={i} style={{ display:'flex', gap:12, padding:'10px 12px', background:n.type==='warn'?'#FFF3CD':n.type==='info'?'#D6EAF8':n.type==='tip'?'#D5F5E3':'#FDE8D8', borderRadius:12, alignItems:'flex-start' }}>
+              <div key={i} onClick={n.action||undefined} style={{ display:'flex', gap:12, padding:'10px 12px', background:n.type==='warn'?'#FFF3CD':n.type==='info'?'#D6EAF8':'#D5F5E3', borderRadius:12, alignItems:'flex-start', cursor:n.action?'pointer':'default' }}>
                 <span style={{ fontSize:18 }}>{n.icon}</span>
                 <div style={{ flex:1 }}>
                   <div style={{ fontSize:13, color:C.text, lineHeight:1.5 }}>{n.text}</div>
-                  {n.time && <div style={{ fontSize:11, color:C.textS, marginTop:2 }}>{n.time}</div>}
                 </div>
+                {n.action && <span style={{ color:C.primary, fontSize:16 }}>›</span>}
               </div>
             ))}
           </div>
@@ -1072,8 +1095,8 @@ function RecordsPage({ state, setState }) {
                 <linearGradient id="diaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.info} stopOpacity={0.3}/><stop offset="95%" stopColor={C.info} stopOpacity={0}/></linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={C.borderL} />
-              <XAxis dataKey="date" tick={{ fontSize:10 }} />
-              <YAxis domain={[100,160]} tick={{ fontSize:10 }} />
+              <XAxis dataKey="date" tick={{ fontSize:12 }} />
+              <YAxis domain={[100,160]} tick={{ fontSize:12 }} />
               <Tooltip formatter={(v,n)=>[v, n==='sys'?'收縮壓':'舒張壓']} />
               <Area type="monotone" dataKey="sys" stroke={C.danger} fill="url(#sysGrad)" strokeWidth={2} dot={false} />
               <Area type="monotone" dataKey="dia" stroke={C.info} fill="url(#diaGrad)" strokeWidth={2} dot={false} />
@@ -1093,8 +1116,8 @@ function RecordsPage({ state, setState }) {
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={bsData} margin={{top:5,right:5,bottom:5,left:-20}}>
               <CartesianGrid strokeDasharray="3 3" stroke={C.borderL} />
-              <XAxis dataKey="date" tick={{ fontSize:10 }} />
-              <YAxis domain={[80,130]} tick={{ fontSize:10 }} />
+              <XAxis dataKey="date" tick={{ fontSize:12 }} />
+              <YAxis domain={[80,130]} tick={{ fontSize:12 }} />
               <Tooltip />
               <Line type="monotone" dataKey="value" stroke={C.warning} strokeWidth={2.5} dot={{ fill:C.warning, r:4 }} name="空腹血糖" />
             </LineChart>
@@ -1113,8 +1136,8 @@ function RecordsPage({ state, setState }) {
             <AreaChart data={weightData} margin={{top:5,right:5,bottom:5,left:-20}}>
               <defs><linearGradient id="wGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.primary} stopOpacity={0.3}/><stop offset="95%" stopColor={C.primary} stopOpacity={0}/></linearGradient></defs>
               <CartesianGrid strokeDasharray="3 3" stroke={C.borderL} />
-              <XAxis dataKey="date" tick={{ fontSize:10 }} />
-              <YAxis domain={[73,80]} tick={{ fontSize:10 }} />
+              <XAxis dataKey="date" tick={{ fontSize:12 }} />
+              <YAxis domain={[73,80]} tick={{ fontSize:12 }} />
               <Tooltip formatter={v=>[`${v} kg`,'體重']} />
               <Area type="monotone" dataKey="value" stroke={C.primary} fill="url(#wGrad)" strokeWidth={2.5} />
             </AreaChart>
@@ -1128,8 +1151,8 @@ function RecordsPage({ state, setState }) {
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={sleepData} margin={{top:5,right:5,bottom:5,left:-20}}>
               <CartesianGrid strokeDasharray="3 3" stroke={C.borderL} />
-              <XAxis dataKey="date" tick={{ fontSize:10 }} />
-              <YAxis domain={[0,9]} tick={{ fontSize:10 }} />
+              <XAxis dataKey="date" tick={{ fontSize:12 }} />
+              <YAxis domain={[0,9]} tick={{ fontSize:12 }} />
               <Tooltip formatter={v=>[`${v} 小時`,'睡眠']} />
               <Bar dataKey="value" fill={C.info} radius={[4,4,0,0]} name="睡眠時數">
                 {sleepData.map((entry,i)=><Cell key={i} fill={entry.value>=7?C.success:entry.value>=6?C.warning:C.danger} />)}
@@ -1151,7 +1174,7 @@ function RecordsPage({ state, setState }) {
       <div style={{ ...S.card, marginBottom:16 }}>
         <div style={{ fontSize:16, fontWeight:800, marginBottom:14 }}>🎯 我的健康目標</div>
         {[
-          { label:'體重降至74kg', progress:62, current:'75.8', target:'74.0', unit:'kg' },
+          { label:'體重管理目標', progress: state.newRecord?.weight ? 50 : 0, current: state.newRecord?.weight || '未記錄', target:'設定中', unit:'kg' },
           { label:'血壓降至120/80', progress:85, current:'118/76', target:'120/80', unit:'' },
           { label:'每日步行8000步', progress:75, current:'6000', target:'8000', unit:'步' },
         ].map((g,i) => (
@@ -9749,7 +9772,11 @@ function CartPage({ state, setState }) {
             </div>
           ))}
         </div>
-        <button onClick={()=>setCheckoutStep('store')} style={S.btn('primary')}>下一步：選擇取貨門市</button>
+        <button onClick={()=>{
+          if(!orderForm.name.trim()){alert('請填寫取貨人姓名');return;}
+          if(!orderForm.phone.trim()||!orderForm.phone.match(/^09\d{8}$/)){alert('請輸入正確手機號碼（09xxxxxxxx）');return;}
+          setCheckoutStep('store');
+        }} style={S.btn('primary')}>下一步：選擇取貨門市</button>
       </div>
     );
   }
@@ -9875,6 +9902,66 @@ function CartPage({ state, setState }) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 個人中心頁 Profile Page
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// ── 訂單歷史組件 (真實 Supabase 數據) ──────────────────────
+function OrderHistory({ userId, onGoMall }) {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) { setLoading(false); return; }
+    import('./lib/supabase.js').then(({ supabase }) => {
+      supabase.from('orders')
+        .select('order_no, created_at, order_status, total_amount, items_json, store_name')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10)
+        .then(({ data }) => {
+          setOrders(data || []);
+          setLoading(false);
+        });
+    }).catch(() => setLoading(false));
+  }, [userId]);
+
+  const statusColor = (s) => ({
+    '待確認':C.warning,'待出貨':C.info,'配送中':C.primary,
+    '可取貨':C.success,'已取貨':C.textL,'取貨逾期':C.danger,'已取消':C.textL
+  }[s] || C.textS);
+
+  const formatDate = (ts) => ts ? new Date(ts).toLocaleDateString('zh-TW') : '';
+
+  return (
+    <div style={{ ...S.card, marginBottom:16 }}>
+      <SectionHeader title="我的訂單" sub="最近訂購記錄" />
+      {loading ? (
+        <div style={{ textAlign:'center', padding:'20px', color:C.textS, fontSize:14 }}>載入中...</div>
+      ) : orders.length === 0 ? (
+        <div style={{ textAlign:'center', padding:'24px', color:C.textS }}>
+          <div style={{ fontSize:36, marginBottom:8 }}>🛍️</div>
+          <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:6 }}>還沒有訂單記錄</div>
+          <div style={{ fontSize:12, color:C.textS, marginBottom:12 }}>去商城選購您需要的保健品</div>
+          <button onClick={onGoMall} style={{ ...S.btn('primary'), width:'auto', padding:'8px 20px', fontSize:13 }}>前往商城</button>
+        </div>
+      ) : orders.map((o, i) => (
+        <div key={o.order_no} style={{ padding:'12px 0', borderBottom: i < orders.length-1 ? `1px solid ${C.borderL}` : 'none' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
+            <span style={{ fontSize:12, color:C.textS }}>{formatDate(o.created_at)} · {o.order_no}</span>
+            <span style={{ background:statusColor(o.order_status)+'22', color:statusColor(o.order_status), fontSize:12, fontWeight:700, padding:'2px 8px', borderRadius:10 }}>{o.order_status}</span>
+          </div>
+          <div style={{ fontSize:13, color:C.textS, marginBottom:2 }}>📦 {o.store_name}</div>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <div style={{ fontSize:12, color:C.textS }}>
+              {(o.items_json||[]).slice(0,2).map(it=>`${it.name}×${it.qty}`).join('、')}
+              {(o.items_json||[]).length > 2 && ` 等${o.items_json.length}件`}
+            </div>
+            <div style={{ fontSize:14, fontWeight:800, color:C.primary }}>NT$ {Number(o.total_amount).toLocaleString()}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ProfilePage({ state, setState, user, requireLogin, onLogout }) {
   const lvl = user ? getMemberLevel(user.points||0) : null;
   const pts = user ? (user.points||0) : 0;
@@ -9946,42 +10033,20 @@ function ProfilePage({ state, setState, user, requireLogin, onLogout }) {
       <div style={{ marginTop:16 }}>
         {/* Health Profile Summary */}
         <div style={{ ...S.card, marginBottom:16 }}>
-          <div style={{ fontSize:15, fontWeight:800, marginBottom:14 }}>👤 個人健康檔案</div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10 }}>
-            {[
-              { label:'年齡', val:'56歲', emoji:'🎂' },
-              { label:'性別', val:'女性（停經後）', emoji:'♀️' },
-              { label:'身高', val:'162 cm', emoji:'📏' },
-              { label:'體重', val:'75.8 kg', emoji:'⚖️' },
-              { label:'BMI', val:'28.9 (略過重)', emoji:'📊', warn:true },
-              { label:'血型', val:'O型', emoji:'🩸' },
-            ].map(i=>(
-              <div key={i.label} style={{ background:i.warn?`${C.warning}10`:C.bg, borderRadius:10, padding:'10px 12px', border:i.warn?`1px solid ${C.warning}30`:undefined }}>
-                <div style={{ fontSize:11, color:C.textS }}>{i.emoji} {i.label}</div>
-                <div style={{ fontSize:14, fontWeight:700, color:i.warn?C.warning:C.text, marginTop:2 }}>{i.val}</div>
-              </div>
-            ))}
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+            <div style={{ fontSize:15, fontWeight:800 }}>👤 個人健康檔案</div>
+            <span style={{ fontSize:12, color:C.textS }}>完善資料以獲得更精準推薦</span>
+          </div>
+          <div style={{ background:C.bg, borderRadius:12, padding:'16px', textAlign:'center' }}>
+            <div style={{ fontSize:32, marginBottom:8 }}>📋</div>
+            <div style={{ fontSize:14, fontWeight:700, color:C.text, marginBottom:6 }}>健康檔案尚未填寫</div>
+            <div style={{ fontSize:12, color:C.textS, marginBottom:12, lineHeight:1.6 }}>填寫年齡、身高、體重等基本資料<br/>讓 AI 為您提供更個人化的建議</div>
+            <button onClick={()=>setState(s=>({...s,page:'records'}))} style={{ ...S.btn('outline'), width:'auto', padding:'8px 20px', fontSize:13 }}>前往健康記錄填寫</button>
           </div>
         </div>
 
-        {/* Order History */}
-        <div style={{ ...S.card, marginBottom:16 }}>
-          <SectionHeader title="我的訂單" sub="最近訂購記錄" />
-          {[
-            { id:'HC20240412', date:'2024/04/12', status:'已取貨', items:'深海魚油 × 2', total:1780 },
-            { id:'HC20240328', date:'2024/03/28', status:'已取貨', items:'輔酶Q10, 奶薊草', total:2000 },
-            { id:'HC20240310', date:'2024/03/10', status:'已取貨', items:'益生菌 × 1', total:980 },
-          ].map(o=>(
-            <div key={o.id} style={{ padding:'12px 0', borderBottom:`1px solid ${C.borderL}` }}>
-              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                <span style={{ fontSize:12, color:C.textS }}>{o.date}</span>
-                <Badge color={C.success}>{o.status}</Badge>
-              </div>
-              <div style={{ fontSize:14, fontWeight:600, color:C.text }}>{o.items}</div>
-              <div style={{ fontSize:13, color:C.primary, fontWeight:700, marginTop:2 }}>NT$ {o.total.toLocaleString()}</div>
-            </div>
-          ))}
-        </div>
+        {/* Order History — real data from Supabase */}
+        <OrderHistory userId={user.id} onGoMall={()=>setState(s=>({...s,page:'mall'}))} />
 
         {/* Settings Menu */}
         <div style={{ ...S.card, marginBottom:16 }}>
@@ -10106,8 +10171,8 @@ function AdminPage({ setState }) {
                 <AreaChart data={revenueData} margin={{top:5,right:5,bottom:5,left:-20}}>
                   <defs><linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#1A6744" stopOpacity={0.4}/><stop offset="95%" stopColor="#1A6744" stopOpacity={0}/></linearGradient></defs>
                   <CartesianGrid strokeDasharray="3 3" stroke={C.borderL} />
-                  <XAxis dataKey="month" tick={{ fontSize:10 }} />
-                  <YAxis tick={{ fontSize:10 }} tickFormatter={v=>`${(v/1000).toFixed(0)}K`} />
+                  <XAxis dataKey="month" tick={{ fontSize:12 }} />
+                  <YAxis tick={{ fontSize:12 }} tickFormatter={v=>`${(v/1000).toFixed(0)}K`} />
                   <Tooltip formatter={v=>[`NT$ ${v.toLocaleString()}`,'營收']} />
                   <Area type="monotone" dataKey="rev" stroke="#1A6744" fill="url(#revGrad)" strokeWidth={2.5} />
                 </AreaChart>
@@ -10147,6 +10212,7 @@ function AdminPage({ setState }) {
               ))}
             </div>
             {[
+              // 以下為示範數據，正式上線後將從 Supabase 讀取真實訂單
               { id:'HC20240422001', name:'林志明', product:'深海魚油 × 2', total:1780, store:'台中漢口門市', status:'可取貨', time:'2小時前', phone:'0912-xxx-789' },
               { id:'HC20240422002', name:'陳美惠', product:'CoQ10 + 益生菌', total:2260, store:'台中大墩門市', status:'配送中', time:'5小時前', phone:'0923-xxx-456' },
               { id:'HC20240421003', name:'張國雄', product:'NMN高效版 × 1', total:2880, store:'台北忠孝門市', status:'已取貨', time:'昨天', phone:'0933-xxx-123' },
@@ -10477,7 +10543,7 @@ function HealthPlatform() {
             const cartCount = n.id==='mall' ? state.cart.reduce((s,i)=>s+i.qty,0) : 0;
             return (
               <button key={n.id} onClick={()=>setState(s=>({...s,page:n.id,subpage:null,selectedProduct:null}))} style={{ flex:1, padding:'10px 4px 14px', border:'none', background:'none', display:'flex', flexDirection:'column', alignItems:'center', gap:3, cursor:'pointer', position:'relative' }}>
-                {cartCount > 0 && <span style={{ position:'absolute', top:6, right:'30%', background:C.danger, color:'#fff', fontSize:9, fontWeight:800, borderRadius:99, width:16, height:16, display:'flex', alignItems:'center', justifyContent:'center' }}>{cartCount}</span>}
+                {cartCount > 0 && <span style={{ position:'absolute', top:6, right:'30%', background:C.danger, color:'#fff', fontSize:11, fontWeight:800, borderRadius:99, width:16, height:16, display:'flex', alignItems:'center', justifyContent:'center' }}>{cartCount}</span>}
                 <span style={{ fontSize:22, filter: active ? 'none' : 'grayscale(40%)' }}>{n.emoji}</span>
                 <span style={{ fontSize:10, fontWeight:700, color:active?C.primary:C.textL }}>{n.label}</span>
                 {active && <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:24, height:3, background:C.primary, borderRadius:'0 0 3px 3px' }} />}
